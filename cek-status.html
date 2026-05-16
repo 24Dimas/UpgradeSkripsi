@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cek Status Pengajuan – Kesbangpol Kudus</title>
+  <link rel="icon" type="image/png" href="src/Logo_Kudus_Fix.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #dce8f7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 440px;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(10, 42, 94, 0.22);
+      animation: fadeUp .5s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* HEADER */
+    .card-header {
+      background: linear-gradient(160deg, #0a2a5e, #1a5cb5);
+      padding: 22px 24px 20px;
+      text-align: center;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #a8cbf0;
+      font-size: 13px;
+      text-decoration: none;
+      transition: color .15s;
+    }
+    .back-btn:hover { color: #fff; }
+    .back-btn i { font-size: 15px; }
+    .logos-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+    .logo-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 60px;
+    }
+    .logo-box img {
+      height: 55px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25));
+    }
+    .h-divider {
+      width: 36px; height: 2px;
+      background: rgba(255,255,255,0.25);
+      margin: 12px auto 10px;
+    }
+    .h-title { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 4px; line-height: 1.35; }
+    .h-sub { font-size: 11.5px; color: #a8cbf0; letter-spacing: 0.3px; }
+
+    .gold-bar { height: 4px; background: linear-gradient(90deg,#c8a951,#e8c96a,#c8a951); }
+
+    /* BODY */
+    .card-body { background: #fff; padding: 26px 24px 28px; }
+
+    .section-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0a2a5e;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title i { color: #1a5cb5; font-size: 18px; }
+    .section-sub {
+      font-size: 13px;
+      color: #5a7aaa;
+      margin-bottom: 22px;
+      line-height: 1.6;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .input-ref {
+      flex: 1;
+      border: 1.5px solid #c5deff;
+      border-radius: 12px;
+      padding: 13px 16px;
+      font-size: 14px;
+      color: #0a2a5e;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #f8fbff;
+    }
+    .input-ref::placeholder { text-transform: none; color: #aac2e0; letter-spacing: 0; }
+    .input-ref:focus { border-color: #1a5cb5; box-shadow: 0 0 0 3px rgba(26,92,181,0.1); background: #fff; }
+    .btn-cek {
+      background: #0a2a5e;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 13px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .18s, transform .15s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+      letter-spacing: 0.2px;
+    }
+    .btn-cek:hover { background: #1a5cb5; }
+    .btn-cek:active { transform: scale(0.97); }
+    .btn-cek i { font-size: 15px; }
+
+    .hint {
+      font-size: 12px;
+      color: #7a9abf;
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+    .hint i { margin-right: 3px; }
+
+    /* LOADING */
+    .loading-wrap {
+      text-align: center;
+      padding: 24px 0;
+      display: none;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #d0e4ff;
+      border-top-color: #1a5cb5;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-txt { font-size: 13px; color: #5a7aaa; }
+
+    /* ERROR */
+    .error-box {
+      background: #fff5f5;
+      border: 1.5px solid #fecaca;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-top: 4px;
+      display: none;
+      text-align: center;
+    }
+    .error-icon { font-size: 28px; margin-bottom: 6px; }
+    .error-title { font-size: 14px; font-weight: 700; color: #991b1b; margin-bottom: 4px; }
+    .error-msg { font-size: 12.5px; color: #b91c1c; line-height: 1.5; }
+
+    /* RESULT CARD */
+    .result-wrap {
+      display: none;
+      animation: fadeUp .4s ease both;
+    }
+    .result-card {
+      border: 1.5px solid #d0e4ff;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .result-header {
+      background: #f0f6ff;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #d8eaff;
+    }
+    .result-ref {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1a5cb5;
+      letter-spacing: 0.5px;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .badge-pending  { background: #fef3c7; color: #92400e; }
+    .badge-diproses { background: #dbeafe; color: #1e40af; }
+    .badge-selesai  { background: #d1fae5; color: #065f46; }
+    .badge-ditolak  { background: #fee2e2; color: #991b1b; }
+    .badge-default  { background: #f1f5f9; color: #475569; }
+
+    .result-body { padding: 14px 16px; }
+    .result-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+    .result-row:last-child { margin-bottom: 0; }
+    .result-key {
+      color: #5a7aaa;
+      width: 120px;
+      flex-shrink: 0;
+      font-size: 12.5px;
+    }
+    .result-val {
+      color: #0a2a5e;
+      font-weight: 600;
+      flex: 1;
+      line-height: 1.4;
+    }
+
+    /* PROGRESS STEPS */
+    .steps-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 18px 0 6px;
+      gap: 0;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      flex: 1;
+    }
+    .step-circle {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+    }
+    .step-label { font-size: 10.5px; font-weight: 600; text-align: center; line-height: 1.3; }
+    .step-sub   { font-size: 10px; color: #9ab0cc; text-align: center; }
+    .step-line  { flex: 1; height: 2px; margin-bottom: 22px; }
+
+    .step-done   .step-circle { background: #1a9e5c; color: #fff; }
+    .step-done   .step-label  { color: #1a9e5c; }
+    .step-active .step-circle { background: #f59e0b; color: #fff; }
+    .step-active .step-label  { color: #d97706; }
+    .step-wait   .step-circle { background: #e5e7eb; color: #9ca3af; }
+    .step-wait   .step-label  { color: #9ca3af; }
+    .line-done   { background: #1a9e5c; }
+    .line-wait   { background: #e5e7eb; }
+
+    /* FOOTER */
+    .card-footer {
+      background: #f0f6ff;
+      border-top: 1px solid #d8eaff;
+      padding: 12px 20px;
+      text-align: center;
+    }
+    .ft { font-size: 10.5px; color: #5a7aaa; line-height: 1.7; }
+    .ft strong { color: #0a2a5e; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="card-header">
+    <div class="header-top">
+      <a href="index.html" class="back-btn">
+        <i class="bi bi-arrow-left"></i> Kembali
+      </a>
+      <div class="logos-row">
+        <div class="logo-box"><img src="src/LOGO.png" alt="Logo Kesbangpol"></div>
+        <div class="logo-box"><img src="src/logo_berAKHLAK.png" alt="BerAKHLAK"></div>
+      </div>
+      <div style="width:60px"></div>
+    </div>
+    <div class="h-divider"></div>
+    <div class="h-title">BADAN KESATUAN BANGSA<br>DAN POLITIK KABUPATEN KUDUS</div>
+    <div class="h-sub">Sistem Registrasi Penelitian</div>
+  </div>
+
+  <div class="gold-bar"></div>
+
+  <!-- BODY -->
+  <div class="card-body">
+    <div class="section-title"><i class="bi bi-search"></i>Cek Status Pengajuan</div>
+    <div class="section-sub">Masukkan nomor referensi yang Anda terima melalui email setelah mendaftar.</div>
+
+    <div style="margin-top:4px">
+      <div class="input-group">
+        <input type="text" id="inputRef" class="input-ref"
+          placeholder="Contoh: KBP-20250101-1200"
+          maxlength="20"
+          oninput="this.value=this.value.toUpperCase()">
+        <button class="btn-cek" onclick="cekStatus()">
+          <i class="bi bi-search"></i> Cek
+        </button>
+      </div>
+      <div class="hint">
+        <i class="bi bi-info-circle"></i>
+        Nomor referensi dikirim ke email Anda setelah pendaftaran berhasil, dengan format <strong>KBP-YYYYMMDD-HHMM</strong>.
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-wrap" id="loadingWrap">
+      <div class="spinner"></div>
+      <div class="loading-txt">Sedang mencari data pengajuan Anda...</div>
+    </div>
+
+    <!-- ERROR -->
+    <div class="error-box" id="errorBox">
+      <div class="error-icon">🔍</div>
+      <div class="error-title">Data Tidak Ditemukan</div>
+      <div class="error-msg" id="errorMsg">Nomor referensi tidak ditemukan. Pastikan nomor yang Anda masukkan sudah benar.</div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="result-wrap" id="resultWrap">
+      <div class="result-card">
+        <div class="result-header">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="result-ref" id="resultRef">KBP-20250101-1200</div>
+            <button onclick="copyRef()" title="Salin nomor referensi" style="background:none;border:none;cursor:pointer;color:#1a5cb5;font-size:15px;padding:2px 5px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background='#e4efff'" onmouseout="this.style.background='none'">
+              <i class="bi bi-clipboard" id="copyIcon"></i>
+            </button>
+          </div>
+          <span class="badge" id="resultBadge">Pending</span>
+        </div>
+
+        <!-- PROGRESS STEPS -->
+        <div style="padding: 4px 16px 0">
+          <div class="steps-wrap" id="stepsWrap">
+            <!-- diisi JS -->
+          </div>
+        </div>
+
+        <div class="result-body">
+          <div class="result-row">
+            <div class="result-key">Nama Pemohon</div>
+            <div class="result-val" id="rNama">—</div>
+          </div>
+          <div class="result-row">
+            <div class="result-key">Asal Lembaga</div>
+            <div class="result-val" id="rLembaga">—</div>
+          </div>
+          <div class="result-row">
+            <div class="result-key">Judul Penelitian</div>
+            <div class="result-val" id="rProposal">—</div>
+          </div>
+          <div class="result-row">
+            <div class="result-key">Lokasi / OPD</div>
+            <div class="result-val" id="rLokasi">—</div>
+          </div>
+          <div class="result-row">
+            <div class="result-key">Periode</div>
+            <div class="result-val" id="rPeriode">—</div>
+          </div>
+          <div class="result-row">
+            <div class="result-key">Tanggal Daftar</div>
+            <div class="result-val" id="rTanggal">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="card-footer">
+    <div class="ft">
+      © 2025–2026 Badan Kesatuan Bangsa dan Politik Kabupaten Kudus<br>
+      Dikembangkan oleh <strong>Dimas Wahyu Damar Panuluh</strong> – Teknik Informatika, UMK
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwyZ5WJGmg1qkPgjuiHGJrGzAIFNQWumpw92FBoun7S60oTYriJQ_6yxgcDFBBOqYdQ/exec";
+
+function formatTanggal(str) {
+  if (!str) return "—";
+  const bulan = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Ags","Sep","Okt","Nov","Des"];
+
+  // Coba deteksi format DD/MM/YYYY (dari Google Sheets)
+  const dmyMatch = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (dmyMatch) {
+    const day   = parseInt(dmyMatch[1]);
+    const month = parseInt(dmyMatch[2]) - 1;
+    const year  = parseInt(dmyMatch[3]);
+    return `${day} ${bulan[month]} ${year}`;
+  }
+
+  // Fallback: format YYYY-MM-DD atau lainnya
+  const d = new Date(str);
+  if (isNaN(d)) return str;
+  return `${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function renderSteps(status) {
+  const s = (status || "").toLowerCase();
+  let s1 = "step-done", s2 = "step-wait", s3 = "step-wait";
+  let l1 = "line-wait", l2 = "line-wait";
+  let lbl2 = "Verifikasi", sub2 = "Menunggu";
+  let lbl3 = "Surat Siap", sub3 = "Menunggu";
+
+  if (s === "diproses") {
+    s2 = "step-active"; l1 = "line-done";
+    sub2 = "Sedang diproses";
+  } else if (s === "selesai") {
+    s2 = "step-done"; s3 = "step-done";
+    l1 = "line-done"; l2 = "line-done";
+    sub2 = "Selesai"; sub3 = "Cek Email Anda";
+  } else if (s === "ditolak") {
+    s2 = "step-active"; l1 = "line-done";
+    lbl2 = "Ditolak"; sub2 = "Tidak diproses";
+    s2 = "step-wait";
+  }
+
+  return `
+    <div class="step step-done">
+      <div class="step-circle">✓</div>
+      <div class="step-label">Pendaftaran</div>
+      <div class="step-sub">Selesai</div>
+    </div>
+    <div class="step-line ${l1}"></div>
+    <div class="step ${s2}">
+      <div class="step-circle">${s2==='step-done'?'✓':'⏳'}</div>
+      <div class="step-label">${lbl2}</div>
+      <div class="step-sub">${sub2}</div>
+    </div>
+    <div class="step-line ${l2}"></div>
+    <div class="step ${s3}">
+      <div class="step-circle">📄</div>
+      <div class="step-label">${lbl3}</div>
+      <div class="step-sub">${sub3}</div>
+    </div>
+  `;
+}
+
+function getBadgeClass(status) {
+  const s = (status || "").toLowerCase();
+  if (s === "pending")  return "badge-pending";
+  if (s === "diproses") return "badge-diproses";
+  if (s === "selesai")  return "badge-selesai";
+  if (s === "ditolak")  return "badge-ditolak";
+  return "badge-default";
+}
+
+async function cekStatus() {
+  const refInput = document.getElementById("inputRef").value.trim().toUpperCase();
+
+  if (!refInput) {
+    document.getElementById("errorMsg").textContent = "Silakan masukkan nomor referensi terlebih dahulu.";
+    showState("error");
+    return;
+  }
+
+  showState("loading");
+
+  try {
+    const res  = await fetch(`${API_URL}?action=checkStatus&ref=${encodeURIComponent(refInput)}`);
+    const json = await res.json();
+
+    if (!json.found || !json.row) {
+      document.getElementById("errorMsg").textContent = "Nomor referensi tidak ditemukan. Pastikan nomor yang Anda masukkan sudah benar.";
+      showState("error");
+      return;
+    }
+
+    const found = json.row;
+    // Isi data hasil
+    const status = found.status || "Pending";
+    document.getElementById("resultRef").textContent   = refInput;
+    document.getElementById("resultBadge").textContent = status;
+    document.getElementById("resultBadge").className   = "badge " + getBadgeClass(status);
+    document.getElementById("stepsWrap").innerHTML     = renderSteps(status);
+    document.getElementById("rNama").textContent       = found.nama      || "—";
+    document.getElementById("rLembaga").textContent    = found.nama_lembaga || "—";
+    document.getElementById("rProposal").textContent   = found.proposal  || "—";
+    document.getElementById("rLokasi").textContent     = found.lokasi    || "—";
+
+    const mulai   = formatTanggal(found.tanggal_mulai);
+    const selesai = formatTanggal(found.tanggal_selesai);
+    document.getElementById("rPeriode").textContent  = (mulai && selesai) ? `${mulai} s/d ${selesai}` : "—";
+    document.getElementById("rTanggal").textContent  = found.timestamp ? formatTanggal(found.timestamp) : "—";
+
+    showState("result");
+
+  } catch (err) {
+    document.getElementById("errorMsg").textContent = "Gagal menghubungi server. Periksa koneksi internet Anda dan coba lagi.";
+    showState("error");
+  }
+}
+
+function showState(state) {
+  document.getElementById("loadingWrap").style.display = state === "loading" ? "block" : "none";
+  document.getElementById("errorBox").style.display    = state === "error"   ? "block" : "none";
+  document.getElementById("resultWrap").style.display  = state === "result"  ? "block" : "none";
+}
+
+// Enter key
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("inputRef").addEventListener("keydown", e => {
+    if (e.key === "Enter") cekStatus();
+  });
+});
+
+function copyRef() {
+  const ref = document.getElementById("resultRef").textContent;
+  navigator.clipboard.writeText(ref).then(() => {
+    const icon = document.getElementById("copyIcon");
+    icon.className = "bi bi-check-lg";
+    icon.style.color = "#198754";
+    setTimeout(() => { icon.className = "bi bi-clipboard"; icon.style.color = ""; }, 1500);
+    showToast("Nomor referensi disalin!");
+  }).catch(() => {});
+}
+
+function showToast(msg) {
+  let toast = document.getElementById("cekToast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "cekToast";
+    Object.assign(toast.style, {
+      position:"fixed", bottom:"20px", right:"20px",
+      background:"#0a2a5e", color:"#fff",
+      padding:"10px 18px", borderRadius:"12px",
+      fontSize:"13px", fontWeight:"600",
+      boxShadow:"0 8px 24px rgba(10,42,94,0.25)",
+      zIndex:"9999", opacity:"0", transform:"translateY(10px)",
+      transition:"opacity .3s, transform .3s",
+      display:"flex", alignItems:"center", gap:"8px"
+    });
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML = '<i class="bi bi-check-circle-fill" style="color:#4ADE80;"></i>' + msg;
+  toast.style.opacity = "1";
+  toast.style.transform = "translateY(0)";
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(10px)";
+  }, 2400);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kesbangpol Kudus – Sistem Registrasi Penelitian</title>
+  <link rel="icon" type="image/png" href="src/Logo_Kudus_Fix.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #e8f0fc;
+      padding: 20px;
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(10, 42, 94, 0.18);
+      animation: fadeUp 0.5s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .card-header {
+      background: linear-gradient(160deg, #0a2a5e, #1a5cb5);
+      padding: 28px 24px 22px;
+      text-align: center;
+    }
+    .logos-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .logo-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 65px;
+    }
+    .logo-box img {
+      height: 60px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25));
+    }
+    .h-divider {
+      width: 40px;
+      height: 2px;
+      background: rgba(255,255,255,0.25);
+      margin: 0 auto 14px;
+    }
+    .h-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.4;
+      margin-bottom: 5px;
+      letter-spacing: 0.3px;
+    }
+    .h-sub {
+      font-size: 12px;
+      color: #a8cbf0;
+      letter-spacing: 0.5px;
+    }
+    .gold-bar {
+      height: 4px;
+      background: linear-gradient(90deg, #c8a951, #e8c96a, #c8a951);
+    }
+    .card-body {
+      background: #ffffff;
+      padding: 24px 22px 26px;
+    }
+    .welcome-box {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .welcome-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .welcome-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0a2a5e;
+    }
+    .wave {
+      font-size: 22px;
+      display: inline-block;
+      animation: wave 1.8s ease-in-out infinite;
+      transform-origin: 70% 80%;
+    }
+    @keyframes wave {
+      0%   { transform: rotate(0deg); }
+      10%  { transform: rotate(18deg); }
+      20%  { transform: rotate(-8deg); }
+      30%  { transform: rotate(18deg); }
+      40%  { transform: rotate(-4deg); }
+      50%  { transform: rotate(10deg); }
+      60%  { transform: rotate(0deg); }
+      100% { transform: rotate(0deg); }
+    }
+    .welcome-sub {
+      font-size: 13px;
+      color: #4a6a9a;
+      line-height: 1.6;
+    }
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .btn-card {
+      background: #f5f9ff;
+      border: 1.5px solid #d0e4ff;
+      border-radius: 16px;
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 11px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      text-decoration: none;
+    }
+    .btn-card:hover {
+      background: #e4efff;
+      border-color: #1a5cb5;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(26, 92, 181, 0.15);
+    }
+    .btn-card:active { transform: translateY(0px); }
+    .btn-icon-wrap {
+      width: 54px;
+      height: 54px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .icon-blue { background: #0a2a5e; }
+    .icon-gold  { background: #c8a951; }
+    .btn-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0a2a5e;
+      line-height: 1.25;
+    }
+    .btn-desc {
+      font-size: 11px;
+      color: #5a7aaa;
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+    .card-footer {
+      background: #f0f6ff;
+      border-top: 1px solid #d8eaff;
+      padding: 12px 20px;
+      text-align: center;
+    }
+    .ft {
+      font-size: 10.5px;
+      color: #5a7aaa;
+      line-height: 1.7;
+    }
+    .ft strong {
+      color: #0a2a5e;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <div class="logos-row">
+        <div class="logo-box">
+          <img src="src/LOGO.png" alt="Logo Kesbangpol Kudus">
+        </div>
+        <div class="logo-box">
+          <img src="src/logo_berAKHLAK.png" alt="Logo BerAKHLAK">
+        </div>
+      </div>
+      <div class="h-divider"></div>
+      <div class="h-title">BADAN KESATUAN BANGSA<br>DAN POLITIK KABUPATEN KUDUS</div>
+      <div class="h-sub">Sistem Registrasi Penelitian</div>
+    </div>
+    <div class="gold-bar"></div>
+    <div class="card-body">
+      <div class="welcome-box">
+        <div class="welcome-row">
+          <div class="welcome-title">Selamat Datang</div>
+          <span class="wave">👋</span>
+        </div>
+        <div class="welcome-sub">Silakan pilih layanan yang Anda butuhkan di bawah ini.</div>
+      </div>
+      <div class="btn-grid">
+        <a href="form.html" class="btn-card">
+          <div class="btn-icon-wrap icon-blue">
+            <i class="bi bi-file-earmark-text-fill" style="color:#fff; font-size:24px;"></i>
+          </div>
+          <div>
+            <div class="btn-label">Daftar Penelitian</div>
+            <div class="btn-desc">Isi formulir pendaftaran baru</div>
+          </div>
+        </a>
+        <a href="cek-status.html" class="btn-card">
+          <div class="btn-icon-wrap icon-gold">
+            <i class="bi bi-search" style="color:#fff; font-size:22px;"></i>
+          </div>
+          <div>
+            <div class="btn-label">Cek Status</div>
+            <div class="btn-desc">Lacak pengajuan Anda</div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="ft">
+        © 2025–2026 Badan Kesatuan Bangsa dan Politik Kabupaten Kudus<br>
+        Dikembangkan oleh <strong>Dimas Wahyu Damar Panuluh</strong> – Teknik Informatika, UMK
+      </div>
+    </div>
+  </div>
+</body>
+</html>

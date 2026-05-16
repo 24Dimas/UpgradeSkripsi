@@ -1,0 +1,289 @@
+:root {
+  --primary: #1a3a5c;
+  --primary-light: #2558a3;
+  --primary-dark: #0f2338;
+  --accent: #c8a951;
+  --danger: #dc3545;
+  --text: #1a2b3c;
+  --muted: #6b7a8d;
+  --border: #dce4ef;
+  --bg: #f0f4f8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-image:
+    radial-gradient(ellipse at 15% 25%, rgba(37,88,163,0.1) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 75%, rgba(200,169,81,0.08) 0%, transparent 55%);
+}
+
+.card {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(26,58,92,0.15);
+  overflow: hidden;
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid rgba(200,169,81,0.15);
+  animation: fadeUp 0.5s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card-header {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary) 60%, var(--primary-light));
+  padding: 32px;
+  text-align: center;
+  position: relative;
+}
+
+.card-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 60px; height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.admin-avatar {
+  width: 64px;
+  height: 64px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+  font-size: 28px;
+  color: white;
+  border: 2px solid rgba(200,169,81,0.4);
+  backdrop-filter: blur(4px);
+}
+
+.card-header h1 {
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.card-header p {
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.card-body {
+  padding: 32px;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.input-wrap {
+  position: relative;
+}
+
+.input-wrap i {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.input-wrap input {
+  width: 100%;
+  padding: 11px 14px 11px 38px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: white;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.input-wrap input:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(37,88,163,0.1);
+}
+
+.input-wrap .toggle-pw {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  left: auto;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color 0.2s;
+}
+
+.input-wrap .toggle-pw:hover {
+  color: var(--primary);
+}
+
+.error-msg {
+  background: #fff5f5;
+  border: 1px solid #fcc;
+  border-left: 3px solid var(--danger);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--danger);
+  font-weight: 500;
+  margin-bottom: 16px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-msg.show {
+  display: flex;
+}
+
+.btn-login {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 4px 14px rgba(26,58,92,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn-login:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(26,58,92,0.4);
+}
+
+.btn-login:active {
+  transform: translateY(0);
+}
+
+/* ===== LOADING STATE — spinner + dots pulse ===== */
+.btn-login.loading {
+  position: relative;
+  cursor: not-allowed;
+  opacity: 0.95;
+  transform: none;
+  pointer-events: none;
+}
+
+/* Spinner ring */
+.btn-login .btn-spinner {
+  display: none;
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: btnSpin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.btn-login.loading .btn-spinner { display: block; }
+
+@keyframes btnSpin { to { transform: rotate(360deg); } }
+
+/* Dots pulse */
+.btn-dots-pulse { display: none; align-items: center; gap: 3px; }
+.btn-dots-pulse span {
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  animation: dotBounce 1.2s ease-in-out infinite;
+}
+.btn-dots-pulse span:nth-child(2) { animation-delay: 0.2s; }
+.btn-dots-pulse span:nth-child(3) { animation-delay: 0.4s; }
+.btn-login.loading .btn-dots-pulse { display: inline-flex; }
+
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40%            { transform: scale(1);   opacity: 1; }
+}
+
+/* ===== ERROR MESSAGE — slide-in animation ===== */
+.error-msg.show {
+  display: flex;
+  animation: slideInError 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes slideInError {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== INPUT FOCUS — background subtle ===== */
+.input-wrap input:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(37,88,163,0.1);
+  background: #fafcff;
+}
+
+/* ===== ADMIN AVATAR — subtle entrance glow ===== */
+.admin-avatar {
+  animation: avatarGlow 3s ease-in-out infinite;
+}
+
+@keyframes avatarGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200,169,81,0); }
+  50%       { box-shadow: 0 0 16px 4px rgba(200,169,81,0.25); }
+}
+
+/* ===== BACK LINK ===== */
+.back-link {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.back-link a {
+  color: var(--primary-light);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.back-link a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .card-body { padding: 24px 20px; }
+}

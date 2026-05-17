@@ -106,7 +106,7 @@
       btnSubmit.style.display = 'none';
     }
 
-    $('globalError').style.display = 'none';
+    $('globalError').classList.remove('is-visible');
     if (n === TOTAL_STEPS) renderReview();
     smoothScroll();
   }
@@ -122,8 +122,16 @@
 
       if (id === 'nomor_hp') {
         const c = el.value.replace(/[\s\-]/g, '');
-        if (!/^\d{10,13}$/.test(c)) { setError(id, true, 'Nomor HP harus 10–13 digit'); if (!firstError) firstError = el; hasErr = true; }
-        else setError(id, false);
+        if (!c) {
+          setError(id, true, 'Wajib diisi');
+          if (!firstError) firstError = el; hasErr = true;
+        } else if (c[0] !== '0') {
+          setError(id, true, 'Nomor HP harus dimulai angka 0');
+          if (!firstError) firstError = el; hasErr = true;
+        } else if (!/^\d{10,13}$/.test(c)) {
+          setError(id, true, 'Nomor HP harus 10–13 digit');
+          if (!firstError) firstError = el; hasErr = true;
+        } else setError(id, false);
         return;
       }
       if (id === 'rukun_tetangga_rt' || id === 'rukun_warga_rw') {
@@ -169,12 +177,12 @@
     }
 
     if (hasErr) {
-      $('globalError').style.display = 'block';
+      $('globalError').classList.add('is-visible');
       if (firstError) {
         try { firstError.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){}
         try { firstError.focus({ preventScroll: true }); } catch(e){}
       }
-    } else $('globalError').style.display = 'none';
+    } else $('globalError').classList.remove('is-visible');
 
     return !hasErr;
   }
@@ -432,7 +440,7 @@
     $('anggota-wrapper').classList.remove('error','has-error');
     $$('.input-box.error').forEach(e => e.classList.remove('error','has-error'));
     $$('.is-invalid').forEach(e => e.classList.remove('is-invalid'));
-    $('globalError').style.display = 'none';
+    $('globalError').classList.remove('is-visible');
     updateFilePreview(null);
     clearDraft(); formStarted = false;
     showStep(1);
@@ -506,12 +514,14 @@
 
   // ========== INIT ==========
   document.addEventListener('DOMContentLoaded', function () {
+    // Set form action from config
+    const cfg = window.SIREINO_CONFIG || {};
+    if (cfg.API_URL) $('uploadForm').action = cfg.API_URL;
+
     tambahOPD();
 
-    if (!sessionStorage.getItem('sireinoWelcomeShown')) {
-      openModal('popupModal');
-      sessionStorage.setItem('sireinoWelcomeShown', '1');
-    }
+    // Welcome popup — selalu muncul setiap buka form
+    openModal('popupModal');
 
     setupDropzone();
 

@@ -2,11 +2,24 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Registrasi Penelitian – Kesbangpol Kudus</title>
+    <title>Formulir Registrasi · Si-Reino</title>
     <link rel="stylesheet" href="assets/style.css">
     <link rel="website icon" type="png" href="src/Logo_Kudus_Fix.png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Formulir pendaftaran izin penelitian online. Lengkapi 4 langkah untuk mengajukan izin penelitian di Kabupaten Kudus.">
+  <meta name="author" content="Dimas Wahyu Damar Panuluh">
+  <meta name="theme-color" content="#0a2a5e">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Formulir Registrasi Penelitian · Si-Reino">
+  <meta property="og:description" content="Formulir pendaftaran izin penelitian online. Lengkapi 4 langkah untuk mengajukan izin penelitian di Kabupaten Kudus.">
+  <meta property="og:image" content="src/NEW_LOGO.jpg">
+  <meta property="og:locale" content="id_ID">
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Formulir Registrasi Penelitian · Si-Reino">
+  <meta name="twitter:description" content="Formulir pendaftaran izin penelitian online. Lengkapi 4 langkah untuk mengajukan izin penelitian di Kabupaten Kudus.">
 </head>
 <body>
 
@@ -74,7 +87,7 @@
   <div class="content">
 
     <!-- Global alert -->
-    <div id="globalError" class="alert alert-warning" style="display:none; border-radius:8px; border-left:4px solid #f39c12; background:#fff9e6; color:#8a6700; font-size:14px; font-weight:500; padding:12px 16px; margin-bottom:20px;">
+    <div id="globalError" class="alert alert-warning" style="border-radius:8px; border-left:4px solid #f39c12; background:#fff9e6; color:#8a6700; font-size:14px; font-weight:500; padding:12px 16px;">
       <i class="bi bi-exclamation-triangle-fill" style="margin-right:8px;"></i>
       Masih ada data yang perlu dilengkapi, silakan cek kolom yang ditandai merah.
     </div>
@@ -83,7 +96,7 @@
       <i class="bi bi-cloud-check-fill"></i> Draft tersimpan
     </div>
 
-    <form id="uploadForm" action="https://script.google.com/macros/s/AKfycbwyZ5WJGmg1qkPgjuiHGJrGzAIFNQWumpw92FBoun7S60oTYriJQ_6yxgcDFBBOqYdQ/exec" method="POST">
+    <form id="uploadForm" method="POST">
       <input type="hidden" name="fileContent" id="fileContent">
       <input type="hidden" name="filename" id="filename">
 
@@ -606,6 +619,7 @@
   <div id="previewBox"></div>
 </div>
 
+<script src="assets/config.js" defer></script>
 <script src="assets/script.js" defer></script>
 
 </body>

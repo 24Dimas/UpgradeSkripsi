@@ -2,11 +2,14 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard Admin – Kesbangpol Kudus</title>
+  <title>Dashboard Admin · Si-Reino</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Panel administrator Si-Reino — Kesbangpol Kudus">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0a2a5e">
   <link rel="icon" type="image/png" href="../src/admin.png">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="../assets/tokens.css">
   <link rel="stylesheet" href="dashboard.css">
 </head>
@@ -370,8 +373,9 @@
   </div>
 </div>
 
+<script src="../assets/config.js"></script>
 <script>
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyZ5WJGmg1qkPgjuiHGJrGzAIFNQWumpw92FBoun7S60oTYriJQ_6yxgcDFBBOqYdQ/exec";
+  const APPS_SCRIPT_URL = window.SIREINO_CONFIG.API_URL;
 
   // Sanitasi URL — hanya izinkan https:// dan http:// untuk cegah javascript: injection
   function safeUrl(url) {
@@ -412,6 +416,48 @@
     sessionStorage.clear();
     window.location.href = "login.html";
   }
+
+  // ===== IDLE TIMEOUT (auto-logout) =====
+  const IDLE_TIMEOUT = (window.SIREINO_CONFIG && window.SIREINO_CONFIG.ADMIN_IDLE_TIMEOUT_MS) || 30 * 60 * 1000;
+  const IDLE_WARN_BEFORE = 60 * 1000; // 1 menit sebelum logout, kasih warning
+  let idleTimer = null, idleWarnTimer = null;
+  function resetIdleTimer() {
+    clearTimeout(idleTimer); clearTimeout(idleWarnTimer);
+    // Hide warning toast if exists
+    const w = document.getElementById('idleWarnToast');
+    if (w) w.remove();
+    idleWarnTimer = setTimeout(() => {
+      // Show countdown warning
+      const t = document.createElement('div');
+      t.id = 'idleWarnToast';
+      Object.assign(t.style, {
+        position:'fixed', top:'80px', right:'20px',
+        background:'var(--warning-100)', color:'var(--warning-600)',
+        padding:'14px 18px', borderRadius:'12px',
+        fontSize:'13px', fontWeight:'600', maxWidth:'320px',
+        boxShadow:'0 8px 24px rgba(0,0,0,0.15)', zIndex:'9999',
+        border:'1px solid rgba(180,83,9,0.3)'
+      });
+      let s = Math.round(IDLE_WARN_BEFORE / 1000);
+      t.innerHTML = `<i class="bi bi-clock-history" style="margin-right:6px;"></i>Anda akan logout otomatis dalam <strong id="idleSec">${s}</strong> detik karena tidak aktif. <button style="display:block;margin-top:8px;background:var(--warning-600);color:white;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;" onclick="resetIdleTimer()">Tetap di sini</button>`;
+      document.body.appendChild(t);
+      const ci = setInterval(() => {
+        s--; const el = document.getElementById('idleSec');
+        if (el) el.textContent = s;
+        if (s <= 0) clearInterval(ci);
+      }, 1000);
+    }, IDLE_TIMEOUT - IDLE_WARN_BEFORE);
+    idleTimer = setTimeout(() => {
+      sessionStorage.clear();
+      alert('Sesi telah berakhir karena tidak aktif selama 30 menit.');
+      window.location.href = "login.html";
+    }, IDLE_TIMEOUT);
+  }
+  window.resetIdleTimer = resetIdleTimer;
+  ['mousemove','keydown','click','scroll','touchstart'].forEach(ev =>
+    document.addEventListener(ev, () => resetIdleTimer(), { passive: true })
+  );
+  resetIdleTimer(); // start
 
   // ===== SIDEBAR MOBILE TOGGLE =====
   function toggleSidebar() {

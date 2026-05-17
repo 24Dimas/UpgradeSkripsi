@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Panel administrator Si-Reino — Kesbangpol Kudus">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0a2a5e">
   <title>Login Admin · Si-Reino</title>
   <link rel="icon" type="image/png" href="../src/admin.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -63,8 +66,9 @@
     <div class="back-row"><a href="../index.html"><i class="bi bi-arrow-left"></i> Kembali ke halaman utama</a></div>
   </div>
 </div>
+<script src="../assets/config.js"></script>
 <script>
-const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwyZ5WJGmg1qkPgjuiHGJrGzAIFNQWumpw92FBoun7S60oTYriJQ_6yxgcDFBBOqYdQ/exec";
+const APPS_SCRIPT_URL = window.SIREINO_CONFIG.API_URL;
 let failedAttempts=0;const MAX_ATTEMPTS=3,LOCKOUT_SEC=30;
 document.getElementById("togglePw").addEventListener("click",function(){const pw=document.getElementById("password"),ic=document.getElementById("pwEyeIcon");if(pw.type==="password"){pw.type="text";ic.classList.replace("bi-eye-fill","bi-eye-slash-fill")}else{pw.type="password";ic.classList.replace("bi-eye-slash-fill","bi-eye-fill")}});
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&!document.getElementById("btnLogin").disabled)doLogin()});

@@ -1,0 +1,51 @@
+# ============================================================
+# Si-Reino — Netlify Configuration
+# ============================================================
+
+[build]
+  publish = "."
+
+# Pretty URLs: /form (bukan /form.html)
+[build.processing.html]
+  pretty_urls = true
+
+# Security headers basic untuk semua halaman
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache aset CSS/JS — 7 hari
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# Cache gambar — 30 hari
+[[headers]]
+  for = "/src/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+
+# Backward compatibility: link lama dengan .html tetap jalan (auto-redirect)
+[[redirects]]
+  from = "/form.html"
+  to = "/form"
+  status = 301
+
+[[redirects]]
+  from = "/cek-status.html"
+  to = "/cek-status"
+  status = 301
+
+[[redirects]]
+  from = "/admin/login.html"
+  to = "/admin/login"
+  status = 301
+
+[[redirects]]
+  from = "/admin/dashboard.html"
+  to = "/admin/dashboard"
+  status = 301

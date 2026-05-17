@@ -403,7 +403,7 @@
   // ===== AUTH CHECK =====
   window.addEventListener("DOMContentLoaded", () => {
     if (!sessionStorage.getItem("adminLoggedIn")) {
-      window.location.href = "login.html";
+      window.location.href = "login";
       return;
     }
     const user = sessionStorage.getItem("adminUser") || "Admin";
@@ -414,7 +414,7 @@
 
   function logout() {
     sessionStorage.clear();
-    window.location.href = "login.html";
+    window.location.href = "login";
   }
 
   // ===== IDLE TIMEOUT (auto-logout) =====
@@ -450,7 +450,7 @@
     idleTimer = setTimeout(() => {
       sessionStorage.clear();
       alert('Sesi telah berakhir karena tidak aktif selama 30 menit.');
-      window.location.href = "login.html";
+      window.location.href = "login";
     }, IDLE_TIMEOUT);
   }
   window.resetIdleTimer = resetIdleTimer;

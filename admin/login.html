@@ -63,7 +63,7 @@
     <button class="btn btn-primary btn-block btn-lg" id="btnLogin" onclick="doLogin()">
       <i class="bi bi-box-arrow-in-right"></i><span>Masuk ke Dashboard</span>
     </button>
-    <div class="back-row"><a href="../index.html"><i class="bi bi-arrow-left"></i> Kembali ke halaman utama</a></div>
+    <div class="back-row"><a href="/"><i class="bi bi-arrow-left"></i> Kembali ke halaman utama</a></div>
   </div>
 </div>
 <script src="../assets/config.js"></script>
@@ -80,7 +80,7 @@ if(!u||!p){showErr("Username dan password wajib diisi.");return}
 btn.innerHTML='<span class="spinner"></span><span>Memverifikasi...</span>';btn.disabled=true;hideErr();
 try{const enc=new TextEncoder(),buf=await crypto.subtle.digest("SHA-256",enc.encode(p)),hash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
 const body=new URLSearchParams({action:"login",username:u,password:hash}),res=await fetch(APPS_SCRIPT_URL,{method:"POST",body}),data=await res.json();
-if(data.success){sessionStorage.setItem("adminLoggedIn","true");sessionStorage.setItem("adminUser",u);window.location.href="dashboard.html"}
+if(data.success){sessionStorage.setItem("adminLoggedIn","true");sessionStorage.setItem("adminUser",u);window.location.href="dashboard"}
 else{failedAttempts++;const rem=MAX_ATTEMPTS-failedAttempts;
 if(rem>0){showErr(`Username atau password salah. Sisa percobaan: ${rem}`);btn.innerHTML='<i class="bi bi-box-arrow-in-right"></i><span>Masuk ke Dashboard</span>';btn.disabled=false}
 else{btn.innerHTML='<i class="bi bi-box-arrow-in-right"></i><span>Masuk ke Dashboard</span>';startLockout()}}}

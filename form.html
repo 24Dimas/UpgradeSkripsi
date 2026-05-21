@@ -56,7 +56,7 @@
         <span class="step-num">1</span>
         <i class="bi bi-check-lg step-check"></i>
       </div>
-      <div class="stepper-label">Data Surat</div>
+      <div class="stepper-label">Data Pemohon</div>
     </div>
     <div class="stepper-bar"></div>
     <div class="stepper-item" data-step="2" role="tab" tabindex="0">
@@ -64,7 +64,7 @@
         <span class="step-num">2</span>
         <i class="bi bi-check-lg step-check"></i>
       </div>
-      <div class="stepper-label">Data Pemohon</div>
+      <div class="stepper-label">Data Surat</div>
     </div>
     <div class="stepper-bar"></div>
     <div class="stepper-item" data-step="3" role="tab" tabindex="0">
@@ -100,8 +100,8 @@
       <input type="hidden" name="fileContent" id="fileContent">
       <input type="hidden" name="filename" id="filename">
 
-      <!-- ===== STEP 1: DATA SURAT ===== -->
-      <div class="step-pane active" data-pane="1">
+      <!-- ===== STEP 2: DATA SURAT ===== -->
+      <div class="step-pane" data-pane="2">
         <div class="section-group">
           <div class="section-group-title">
             <i class="bi bi-envelope-paper"></i> Data Surat Pengantar
@@ -166,8 +166,8 @@
         </div>
       </div>
 
-      <!-- ===== STEP 2: DATA PEMOHON ===== -->
-      <div class="step-pane" data-pane="2">
+      <!-- ===== STEP 1: DATA PEMOHON ===== -->
+      <div class="step-pane active" data-pane="1">
         <div class="section-group">
           <div class="section-group-title">
             <i class="bi bi-person-badge"></i> Data Pemohon
@@ -284,10 +284,14 @@
 
           <div class="input-row">
             <div class="input-box field half-width">
-              <label for="bidang" class="form-label">Prodi / Jurusan <span style="color:var(--danger)">*</span></label>
+              <label for="bidang" class="form-label">Prodi / Jurusan Pemohon <span style="color:var(--danger)">*</span></label>
               <input type="text" id="bidang" name="bidang"
                 class="form-control capitalize" data-required="true"
-                placeholder="Program studi / jurusan">
+                placeholder="Program studi/jurusan pemohon utama">
+              <small style="display:block;font-size:11px;color:#6c8194;margin-top:4px;">
+                <i class="bi bi-info-circle" style="margin-right:3px;"></i>
+                Diisi dengan prodi/jurusan dari peneliti utama (bukan anggota).
+              </small>
               <small class="error-text">Wajib diisi</small>
             </div>
             <div class="input-box field half-width">

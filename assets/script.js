@@ -11,9 +11,9 @@
   const MAX_FILE_SIZE_MB = 20;
 
   const STEP_FIELDS = {
-    1: ['atasnama', 'fakultas', 'nama_lembaga', 'nomor_surat', 'tgl_surat', 'perihal'],
-    2: ['nama', 'alamat', 'rukun_tetangga_rt', 'rukun_warga_rw',
+    1: ['nama', 'alamat', 'rukun_tetangga_rt', 'rukun_warga_rw',
         'kecamatan', 'kabupaten', 'pekerjaan', 'email', 'nomor_hp'],
+    2: ['atasnama', 'fakultas', 'nama_lembaga', 'nomor_surat', 'tgl_surat', 'perihal'],
     3: ['proposal', 'bidang', 'opsi_anggota', 'tanggal_mulai', 'tanggal_selesai', 'penanggung_jawab'],
     4: ['attach']
   };
@@ -298,13 +298,13 @@
     const anggota = $('opsi_anggota').value === 'ada' ? ($('anggota_peneliti').value || '—') : 'Tidak ada';
 
     const sections = [
-      { title:'Data Surat', icon:'bi-envelope-paper', step:1,
-        items:[['Jabatan PJ',getVal('atasnama')],['Fakultas',getVal('fakultas')],['Lembaga',getVal('nama_lembaga')],
-               ['No. Surat',getVal('nomor_surat')],['Tgl. Surat',formatTanggalReview($('tgl_surat').value)],['Perihal',getVal('perihal')]]},
-      { title:'Data Pemohon', icon:'bi-person-badge', step:2,
+      { title:'Data Pemohon', icon:'bi-person-badge', step:1, full:true,
         items:[['Nama',getVal('nama')],
                ['Alamat',`${getVal('alamat')}, RT ${getVal('rukun_tetangga_rt')}/RW ${getVal('rukun_warga_rw')}, ${getVal('kecamatan')}, ${getVal('kabupaten')}`],
                ['Pekerjaan',getVal('pekerjaan')],['Email',getVal('email')],['No. HP',getVal('nomor_hp')]]},
+      { title:'Data Surat', icon:'bi-envelope-paper', step:2, full:true,
+        items:[['Jabatan PJ',getVal('atasnama')],['Fakultas',getVal('fakultas')],['Lembaga',getVal('nama_lembaga')],
+               ['No. Surat',getVal('nomor_surat')],['Tgl. Surat',formatTanggalReview($('tgl_surat').value)],['Perihal',getVal('perihal')]]},
       { title:'Data Penelitian', icon:'bi-journal-text', step:3, full:true,
         items:[['Judul',getVal('proposal')],['OPD',$('lokasi').value],['Prodi',getVal('bidang')],
                ['Anggota',anggota],['Periode',periode],['PJ Surat',getVal('penanggung_jawab')]]}
@@ -512,6 +512,124 @@
     reader.readAsDataURL(file);
   }
 
+  // ========== REVISI MODE — auto-fill dari ref number ==========
+  function checkRevisiMode() {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('revisi');
+    if (!ref || !/^KBP-\d+-\d+$/i.test(ref)) return false;
+
+    // Show loading state
+    showRevisiLoading();
+
+    const cfg = window.SIREINO_CONFIG || {};
+    if (!cfg.API_URL) return false;
+
+    fetch(`${cfg.API_URL}?action=getDataByRef&ref=${encodeURIComponent(ref)}`)
+      .then(r => r.json())
+      .then(json => {
+        if (!json.found) {
+          hideRevisiLoading();
+          showCustomAlert(
+            json.error || 'Data revisi tidak ditemukan. Pastikan link revisi masih valid.',
+            'Revisi Tidak Tersedia', '⚠️'
+          );
+          return;
+        }
+        // Auto-fill semua field
+        fillFormFromData(json.data, ref);
+        showRevisiBanner(ref);
+        hideRevisiLoading();
+      })
+      .catch(err => {
+        hideRevisiLoading();
+        showCustomAlert('Gagal memuat data revisi. Periksa koneksi internet.', 'Gagal', '❌');
+      });
+    return true;
+  }
+
+  function fillFormFromData(d, ref) {
+    // Simpan ref sebagai hidden input
+    let hidden = document.querySelector('input[name="revisi_ref"]');
+    if (!hidden) {
+      hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = 'revisi_ref';
+      $('uploadForm').appendChild(hidden);
+    }
+    hidden.value = ref;
+
+    // Fill simple fields
+    const simpleFields = ['atasnama','fakultas','nama_lembaga','nomor_surat','tgl_surat','perihal',
+                          'nama','alamat','rukun_tetangga_rt','rukun_warga_rw',
+                          'kecamatan','kabupaten','pekerjaan','email','nomor_hp',
+                          'proposal','bidang','tanggal_mulai','tanggal_selesai','penanggung_jawab'];
+    simpleFields.forEach(id => {
+      if (d[id]) {
+        const el = $(id);
+        if (el) el.value = d[id];
+      }
+    });
+
+    // OPD list (parse from lokasi field: "1. ABC, 2. DEF, ..." or just "ABC")
+    if (d.lokasi) {
+      $('opd-list').innerHTML = '';
+      const items = d.lokasi.split(/,\s*/).map(s => s.replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
+      items.forEach(() => tambahOPD());
+      $$('.opd-input').forEach((inp, i) => { if (items[i]) inp.value = items[i]; });
+      updateOPDHidden();
+    }
+
+    // Anggota list
+    if (d.anggota_peneliti && d.anggota_peneliti !== '-') {
+      $('opsi_anggota').value = 'ada';
+      toggleAnggota();
+      $('anggota-list').innerHTML = '';
+      const items = d.anggota_peneliti.split(/,\s*/).map(s => s.replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
+      items.forEach(() => tambahAnggota());
+      $$('.anggota-input').forEach((inp, i) => { if (items[i]) inp.value = items[i]; });
+      updateAnggotaHidden();
+    } else if (d.anggota_peneliti === '-') {
+      $('opsi_anggota').value = '-';
+      toggleAnggota();
+    }
+
+    // Update submit button text
+    const sBtn = $('btnSubmit');
+    if (sBtn) sBtn.innerHTML = '<i class="bi bi-send-fill"></i> Kirim Revisi';
+  }
+
+  function showRevisiBanner(ref) {
+    const banner = document.createElement('div');
+    banner.id = 'revisiBanner';
+    banner.style.cssText = 'background:linear-gradient(135deg,#fff7ed,#fef3c7);border:1px solid #fbbf24;border-left:4px solid #d97706;border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:start;gap:12px;';
+    banner.innerHTML = `
+      <div style="font-size:24px;flex-shrink:0;">🔄</div>
+      <div style="flex:1;font-size:13px;line-height:1.6;color:#7c2d12;">
+        <strong style="display:block;margin-bottom:3px;color:#9a3412;font-size:13.5px;">Mode Revisi Pengajuan</strong>
+        Anda sedang merevisi pengajuan dengan nomor referensi <strong>${ref}</strong>. Data sebelumnya telah diisi otomatis — periksa &amp; perbaiki yang perlu, lalu kirim.
+      </div>
+    `;
+    const content = document.querySelector('.content');
+    if (content) content.insertBefore(banner, content.firstChild);
+  }
+
+  function showRevisiLoading() {
+    if ($('revisiLoadingOverlay')) return;
+    const ov = document.createElement('div');
+    ov.id = 'revisiLoadingOverlay';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(10,42,94,0.85);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:Plus Jakarta Sans,sans-serif;';
+    ov.innerHTML = `
+      <div style="width:48px;height:48px;border:4px solid rgba(255,255,255,0.2);border-top-color:#c8a951;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:16px;"></div>
+      <div style="font-size:15px;font-weight:600;">Memuat data revisi...</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">Mohon tunggu sebentar</div>
+    `;
+    document.body.appendChild(ov);
+  }
+  function hideRevisiLoading() {
+    const ov = $('revisiLoadingOverlay');
+    if (ov) ov.remove();
+  }
+
   // ========== INIT ==========
   document.addEventListener('DOMContentLoaded', function () {
     // Set form action from config
@@ -520,8 +638,13 @@
 
     tambahOPD();
 
-    // Welcome popup — selalu muncul setiap buka form
-    openModal('popupModal');
+    // Cek apakah ini mode revisi
+    const isRevisi = checkRevisiMode();
+
+    // Welcome popup hanya kalau BUKAN revisi
+    if (!isRevisi) {
+      openModal('popupModal');
+    }
 
     setupDropzone();
 

@@ -33,7 +33,7 @@
     </a>
     <a class="nav-item" onclick="showPage('data')" href="#">
       <i class="bi bi-table"></i>
-      <span>Data Pendaftar</span>
+      <span>Daftar Pemohon</span>
       <span class="nav-badge" id="navBadgePending" style="display:none;">0</span>
     </a>
     <a class="nav-item" onclick="showPage('rekap')" href="#">
@@ -69,7 +69,8 @@
       <div class="topbar-title" id="pageTitle">Dashboard</div>
     </div>
     <div class="topbar-right">
-      <span id="lastUpdatedLabel" style="font-size:12px;color:var(--muted);margin-right:8px;display:none;">
+      <span id="lastUpdatedLabel" style="font-size:12px;color:var(--muted);margin-right:8px;display:none;align-items:center;gap:4px;">
+        <span class="live-dot" title="Auto-refresh tiap 30 detik"></span>
         <i class="bi bi-clock" style="margin-right:3px;"></i><span id="lastUpdatedText"></span>
       </span>
       <button class="btn-dark-toggle" id="btnDark" onclick="toggleDark()" title="Toggle Dark Mode">
@@ -171,7 +172,7 @@
 
       <div class="table-wrap">
         <div class="table-header">
-          <h3>Data Pendaftar</h3>
+          <h3>Daftar Pemohon</h3>
           <div class="table-header-right">
             <button class="btn-sort" id="btnSort" onclick="toggleSort()" title="Urutkan data">
               <i class="bi bi-arrow-down-up"></i>
@@ -410,9 +411,11 @@
     document.getElementById("adminNameSidebar").textContent = user;
     document.getElementById("adminInitial").textContent = user.charAt(0).toUpperCase();
     loadData();
+    startAutoRefresh(); // mulai polling 30 detik
   });
 
   function logout() {
+    stopAutoRefresh(); // stop polling sebelum logout
     sessionStorage.clear();
     window.location.href = "login";
   }
@@ -476,7 +479,7 @@
     document.getElementById("page-" + page).classList.add("active");
     event.currentTarget.classList.add("active");
 
-    const titles = { dashboard: "Dashboard", data: "Data Pendaftar", rekap: "Rekap & Statistik" };
+    const titles = { dashboard: "Dashboard", data: "Daftar Pemohon", rekap: "Rekap & Statistik" };
     document.getElementById("pageTitle").textContent = titles[page];
     if (window.innerWidth < 900) closeSidebar();
   }
@@ -539,33 +542,144 @@
   }
 
   // ===== LOAD DATA =====
-  async function loadData() {
-    showToast("Memuat data...", "info");
-    showSkeletonStats();
-    showSkeletonTable("tbodyDashboard", 5);
-    showSkeletonTable("tbodyData", 8);
+  // ===== Track jumlah data sebelumnya untuk deteksi data baru =====
+  let prevDataCount = 0;
+
+  async function loadData(silent) {
+    if (!silent) {
+      showToast("Memuat data...", "info");
+      showSkeletonStats();
+      showSkeletonTable("tbodyDashboard", 5);
+      showSkeletonTable("tbodyData", 8);
+    }
     try {
       const res = await fetch(`${APPS_SCRIPT_URL}?action=getData`);
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
       const json = await res.json();
-      allData = json.data || [];
-      filteredData = [...allData];
-      window.filteredData = filteredData;
-      renderDashboard();
-      renderTable(filteredData);
-      // Update timestamp "terakhir diperbarui"
+      const newData = json.data || [];
+
+      // Deteksi data baru (saat silent reload)
+      if (silent && prevDataCount > 0 && newData.length > prevDataCount) {
+        const delta = newData.length - prevDataCount;
+        showToast(`📬 ${delta} pengajuan baru masuk!`, "success");
+      }
+      prevDataCount = newData.length;
+
+      // ===== SILENT MODE: pertahankan state UI =====
+      if (silent && allData.length > 0) {
+        // Save state user sebelum re-render
+        const savedPage = currentPage;
+        const savedScroll = window.scrollY;
+        const searchFocused = document.activeElement &&
+                              document.activeElement.id === 'searchInput';
+        const searchCursor = searchFocused ?
+          [document.activeElement.selectionStart, document.activeElement.selectionEnd] : null;
+
+        // Update sumber data
+        allData = newData;
+
+        // Re-apply filter (baca dari DOM input)
+        const dari   = document.getElementById("filterDari").value;
+        const sampai = document.getElementById("filterSampai").value;
+        const status = document.getElementById("filterStatus").value;
+        filteredData = allData.filter(r => {
+          const tgl = r.timestamp ? new Date(r.timestamp) : null;
+          if (dari && tgl && tgl < new Date(dari)) return false;
+          if (sampai && tgl && tgl > new Date(sampai + "T23:59:59")) return false;
+          if (status && (r.status || "Pending") !== status) return false;
+          return true;
+        });
+        window.filteredData = filteredData;
+
+        // Re-apply search
+        const q = (document.getElementById("searchInput").value || "").toLowerCase();
+        let displayData = filteredData;
+        if (q) {
+          displayData = filteredData.filter(r =>
+            (r.nama || "").toLowerCase().includes(q) ||
+            (r.proposal || "").toLowerCase().includes(q) ||
+            (r.email || "").toLowerCase().includes(q) ||
+            (r.lokasi || "").toLowerCase().includes(q) ||
+            (r.nama_lembaga || r.lembaga || r.kampus || "").toLowerCase().includes(q)
+          );
+        }
+
+        // Re-apply sort
+        const sorted = [...displayData].sort((a, b) => {
+          const tA = a.timestamp ? new Date(a.timestamp) : new Date(0);
+          const tB = b.timestamp ? new Date(b.timestamp) : new Date(0);
+          return sortAsc ? tA - tB : tB - tA;
+        });
+
+        // Update dashboard stats tetap di-render karena ringan
+        renderDashboard();
+        // Render table dengan PAGE YANG SAMA seperti sebelum refresh
+        renderTable(sorted, savedPage);
+
+        // Restore scroll position & search focus
+        window.scrollTo(0, savedScroll);
+        if (searchFocused) {
+          const si = document.getElementById('searchInput');
+          if (si) {
+            si.focus();
+            if (searchCursor) {
+              try { si.setSelectionRange(searchCursor[0], searchCursor[1]); } catch(e) {}
+            }
+          }
+        }
+      } else {
+        // Normal full reload
+        allData = newData;
+        filteredData = [...allData];
+        window.filteredData = filteredData;
+        renderDashboard();
+        renderTable(filteredData);
+      }
+
+      // Update timestamp
       const now = new Date();
       const waktu = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
       const tgl   = now.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
       document.getElementById("lastUpdatedText").textContent = `Diperbarui ${tgl}, ${waktu}`;
       document.getElementById("lastUpdatedLabel").style.display = "inline-flex";
-      showToast("Data berhasil dimuat!", "success");
+      if (!silent) showToast("Data berhasil dimuat!", "success");
     } catch (err) {
-      showToast("Gagal memuat data!", "error");
-      document.getElementById("tbodyDashboard").innerHTML = `<tr><td colspan="5"><div class="table-empty"><i class="bi bi-wifi-off"></i>Gagal memuat data. Cek koneksi.</div></td></tr>`;
-      document.getElementById("tbodyData").innerHTML = `<tr><td colspan="8"><div class="table-empty"><i class="bi bi-wifi-off"></i>Gagal memuat data.</div></td></tr>`;
+      if (!silent) {
+        showToast("Gagal memuat data!", "error");
+        document.getElementById("tbodyDashboard").innerHTML = `<tr><td colspan="5"><div class="table-empty"><i class="bi bi-wifi-off"></i>Gagal memuat data. Cek koneksi.</div></td></tr>`;
+        document.getElementById("tbodyData").innerHTML = `<tr><td colspan="8"><div class="table-empty"><i class="bi bi-wifi-off"></i>Gagal memuat data.</div></td></tr>`;
+      }
+      // silent mode: gagal silently, gak ganggu user
     }
   }
+
+  // ===== AUTO-REFRESH (polling tiap 30 detik) =====
+  let autoRefreshTimer = null;
+  const AUTO_REFRESH_MS = 30 * 1000; // 30 detik
+
+  function startAutoRefresh() {
+    stopAutoRefresh();
+    autoRefreshTimer = setInterval(() => {
+      // Skip kalau modal terbuka (user lagi interaksi)
+      if (document.querySelector('.modal-overlay.show, .custom-modal-overlay[style*="flex"]')) return;
+      // Skip kalau dropdown 3-titik sedang terbuka
+      if (document.querySelector('.row-menu.show, .action-menu.show, .dropdown.show')) return;
+      // Skip kalau tab tidak aktif
+      if (document.hidden) return;
+      loadData(true); // silent mode
+    }, AUTO_REFRESH_MS);
+  }
+  function stopAutoRefresh() {
+    if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+  }
+
+  // Pause auto-refresh saat tab tidak aktif, resume saat aktif
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      // tab visible again — refresh sekarang
+      loadData(true);
+    }
+  });
 
   // ===== RENDER DASHBOARD =====
   function renderDashboard() {
@@ -622,7 +736,7 @@
         <td class="td-nama">${escHtml(r.nama)}</td>
         <td class="td-judul"><span>${escHtml(r.proposal)}</span></td>
         <td>${formatDate(r.timestamp)}</td>
-        <td>${badgeStatus(r.status)}</td>
+        <td>${badgeStatus(r.status, r.revisi_count)}</td>
       </tr>
     `).join("");
   }
@@ -653,7 +767,7 @@
         <td class="td-judul"><span>${escHtml(r.proposal)}</span></td>
         <td style="font-size:12.5px">${escHtml(r.lokasi)}</td>
         <td style="font-size:12.5px;color:var(--primary-light)">${escHtml(r.email)}</td>
-        <td>${badgeStatus(r.status)}</td>
+        <td>${badgeStatus(r.status, r.revisi_count)}</td>
         <td>
           <div class="dropdown-action">
             <button class="btn-dots" onclick="toggleActionMenu(event, ${r.rowIndex})">
@@ -1221,14 +1335,19 @@
     document.getElementById(id).classList.remove("show");
   }
 
-  function badgeStatus(status) {
+  function badgeStatus(status, revisiCount) {
     const map = {
       "Pending":  `<span class="badge badge-pending">⏳ Pending</span>`,
       "Diproses": `<span class="badge badge-proses">🔄 Diproses</span>`,
       "Selesai":  `<span class="badge badge-selesai">✅ Selesai</span>`,
       "Ditolak":  `<span class="badge badge-ditolak">❌ Ditolak</span>`,
     };
-    return map[status] || map["Pending"];
+    let html = map[status] || map["Pending"];
+    const rc = parseInt(revisiCount) || 0;
+    if (rc > 0) {
+      html += ` <span class="badge-revisi" title="Sudah direvisi ${rc}x">🔄 R${rc}</span>`;
+    }
+    return html;
   }
 
   function formatDate(ts) {
@@ -1418,7 +1537,7 @@ function exportExcel() {
 
   // === Build workbook & download ===
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Data Pendaftar");
+  XLSX.utils.book_append_sheet(wb, ws, "Daftar Pemohon");
 
   const tgl = new Date().toISOString().slice(0, 10);
   const filterLabel = status ? `_${status}` : "_Semua";

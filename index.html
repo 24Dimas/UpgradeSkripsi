@@ -197,6 +197,203 @@
       color: #0a2a5e;
       font-weight: 600;
     }
+    /* ===== Tombol Panduan ===== */
+    .btn-panduan {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: #f8fbff;
+      border: 1.5px solid #d0deef;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #1a3a5c;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 14px;
+    }
+    .btn-panduan:hover {
+      background: #e8f0fb;
+      border-color: #2558a3;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37,88,163,0.12);
+    }
+    .btn-panduan > i:first-child {
+      font-size: 18px;
+      color: #2558a3;
+    }
+
+    /* ===== Modal Panduan ===== */
+    .panduan-overlay {
+      position: fixed; inset: 0;
+      background: rgba(10,42,94,0.6);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+      animation: fadeIn .2s;
+    }
+    .panduan-overlay.show { display: flex; }
+    @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+    .panduan-box {
+      background: white;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 560px;
+      max-height: calc(100vh - 32px);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(10,42,94,0.3);
+      animation: slideUp .3s ease;
+      overflow: hidden;
+    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+
+    .panduan-head {
+      background: linear-gradient(135deg, #0a2a5e, #2558a3);
+      color: white;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 3px solid #c8a951;
+    }
+    .panduan-head-text { flex: 1; min-width: 0; }
+    .panduan-head-title {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .panduan-head-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+      margin-top: 2px;
+    }
+    .panduan-close {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .panduan-close:hover { background: rgba(255,255,255,0.25); }
+
+    .panduan-body {
+      padding: 20px 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .panduan-step {
+      display: flex;
+      gap: 14px;
+      padding: 14px;
+      background: #f8fbff;
+      border: 1px solid #e2eaf6;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      transition: all 0.15s;
+    }
+    .panduan-step:hover {
+      border-color: #c0d4ed;
+      background: #f0f6ff;
+    }
+    .panduan-step-num {
+      flex-shrink: 0;
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #2558a3, #1a3a5c);
+      color: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 3px 8px rgba(37,88,163,0.25);
+    }
+    .panduan-step-content { flex: 1; min-width: 0; }
+    .panduan-step-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #1a3a5c;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .panduan-step-title i {
+      color: #2558a3;
+      font-size: 14px;
+    }
+    .panduan-step-desc {
+      font-size: 12.5px;
+      color: #5a6e85;
+      line-height: 1.6;
+    }
+    .panduan-step-desc ul {
+      margin: 4px 0 0 16px;
+      padding: 0;
+    }
+    .panduan-step-desc li {
+      margin: 2px 0;
+    }
+    .panduan-step-desc strong {
+      color: #1a3a5c;
+    }
+
+    .panduan-footer {
+      padding: 14px 24px 20px;
+      border-top: 1px solid #e2eaf6;
+      display: flex;
+      gap: 10px;
+    }
+    .panduan-footer .btn-tutup {
+      flex: 1;
+      padding: 11px 20px;
+      background: white;
+      border: 1.5px solid #d0deef;
+      border-radius: 10px;
+      color: #1a3a5c;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .panduan-footer .btn-tutup:hover {
+      background: #f0f6ff;
+      border-color: #2558a3;
+    }
+    .panduan-footer .btn-mulai {
+      flex: 1.5;
+      padding: 11px 20px;
+      background: linear-gradient(135deg, #2558a3, #1a3a5c);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .panduan-footer .btn-mulai:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(37,88,163,0.3);
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
@@ -243,6 +440,11 @@
           </div>
         </a>
       </div>
+      <button class="btn-panduan" onclick="openPanduan()">
+        <i class="bi bi-question-circle-fill"></i>
+        <span>Lihat Panduan Pengisian</span>
+        <i class="bi bi-arrow-right" style="margin-left:auto;font-size:13px;opacity:.6;"></i>
+      </button>
     </div>
     <div class="card-footer">
       <div class="ft">
@@ -251,5 +453,128 @@
       </div>
     </div>
   </div>
+<!-- ===== MODAL PANDUAN PENGISIAN ===== -->
+<div id="panduanOverlay" class="panduan-overlay" onclick="if(event.target===this)closePanduan()">
+  <div class="panduan-box">
+    <div class="panduan-head">
+      <div class="panduan-head-text">
+        <div class="panduan-head-title">📋 Panduan Pengisian Formulir</div>
+        <div class="panduan-head-sub">Ikuti langkah-langkah berikut untuk mengajukan izin penelitian</div>
+      </div>
+      <button class="panduan-close" onclick="closePanduan()" aria-label="Tutup">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="panduan-body">
+
+      <div class="panduan-step">
+        <div class="panduan-step-num">1</div>
+        <div class="panduan-step-content">
+          <div class="panduan-step-title">
+            <i class="bi bi-folder-fill"></i> Siapkan 5 Berkas (PDF)
+          </div>
+          <div class="panduan-step-desc">
+            Sebelum mengisi, siapkan dokumen berikut dalam format <strong>PDF</strong>:
+            <ul>
+              <li>KTP Pemohon</li>
+              <li>Surat Pengantar dari Kampus</li>
+              <li>Proposal Penelitian</li>
+              <li>Surat Pernyataan</li>
+              <li>Surat Permohonan</li>
+            </ul>
+            Gabungkan semua menjadi <strong>1 file ZIP/RAR</strong> (maksimal 20 MB).
+          </div>
+        </div>
+      </div>
+
+      <div class="panduan-step">
+        <div class="panduan-step-num">2</div>
+        <div class="panduan-step-content">
+          <div class="panduan-step-title">
+            <i class="bi bi-person-badge-fill"></i> Step 1 — Data Pemohon
+          </div>
+          <div class="panduan-step-desc">
+            Isi identitas lengkap pemohon: nama sesuai KTP, alamat (desa/jalan, RT, RW, kecamatan, kabupaten), pekerjaan, email aktif, dan no. HP/WhatsApp. <strong>Pastikan email aktif</strong> karena nomor referensi akan dikirim ke email tersebut.
+          </div>
+        </div>
+      </div>
+
+      <div class="panduan-step">
+        <div class="panduan-step-num">3</div>
+        <div class="panduan-step-content">
+          <div class="panduan-step-title">
+            <i class="bi bi-envelope-paper-fill"></i> Step 2 — Data Surat Pengantar
+          </div>
+          <div class="panduan-step-desc">
+            Isi data dari surat pengantar kampus: jabatan penanggung jawab (mis. Wakil Dekan), nama fakultas, nama kampus, nomor surat, tanggal surat, dan perihal surat.
+          </div>
+        </div>
+      </div>
+
+      <div class="panduan-step">
+        <div class="panduan-step-num">4</div>
+        <div class="panduan-step-content">
+          <div class="panduan-step-title">
+            <i class="bi bi-journal-text"></i> Step 3 — Data Penelitian
+          </div>
+          <div class="panduan-step-desc">
+            Isi judul penelitian, OPD/lokasi penelitian (bisa lebih dari 1, klik <em>+ Tambah OPD</em>), prodi/jurusan pemohon, anggota peneliti (jika ada), tanggal mulai &amp; selesai (<strong>maks. 6 bulan</strong>), serta nama penanggung jawab surat.
+          </div>
+        </div>
+      </div>
+
+      <div class="panduan-step">
+        <div class="panduan-step-num">5</div>
+        <div class="panduan-step-content">
+          <div class="panduan-step-title">
+            <i class="bi bi-clipboard-check-fill"></i> Step 4 — Tinjau &amp; Kirim
+          </div>
+          <div class="panduan-step-desc">
+            Periksa kembali semua data di halaman tinjauan. Klik <em>Edit</em> jika ada yang perlu diperbaiki. Upload file ZIP/RAR (bisa drag &amp; drop), lalu klik <strong>Kirim Pengajuan</strong>.
+          </div>
+        </div>
+      </div>
+
+      <div class="panduan-step">
+        <div class="panduan-step-num">6</div>
+        <div class="panduan-step-content">
+          <div class="panduan-step-title">
+            <i class="bi bi-envelope-check-fill"></i> Setelah Dikirim
+          </div>
+          <div class="panduan-step-desc">
+            Anda akan menerima <strong>email konfirmasi</strong> berisi nomor referensi (format: <code>KBP-YYYYMMDD-HHMM</code>). Gunakan nomor ini untuk cek status melalui menu <em>Cek Status</em>. Notifikasi update status (diproses/ditolak/selesai) juga dikirim via email.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="panduan-footer">
+      <button class="btn-tutup" onclick="closePanduan()">Tutup</button>
+      <a href="form" class="btn-mulai">
+        <i class="bi bi-arrow-right-circle-fill"></i>
+        Mulai Mengisi Formulir
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function openPanduan() {
+    document.getElementById('panduanOverlay').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+  function closePanduan() {
+    document.getElementById('panduanOverlay').classList.remove('show');
+    document.body.style.overflow = '';
+  }
+  // ESC key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closePanduan();
+  });
+</script>
+
 </body>
 </html>

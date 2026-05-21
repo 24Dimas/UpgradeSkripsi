@@ -1,3 +1,9 @@
+// ============================================================
+// KONFIGURASI — URL FRONTEND (ubah saat deploy)
+// Dipakai untuk membentuk link revisi di email penolakan.
+// ============================================================
+var FRONTEND_BASE_URL = "https://sireino.netlify.app";
+
 function doPost(e) {
   // ===== LOGIN ADMIN via POST (aman, tidak lewat URL) =====
   if (e.parameter.action === "login") {
@@ -15,16 +21,32 @@ function doPost(e) {
         var filename = e.parameter.filename;
         var email = e.parameter.email;
         var nama = e.parameter.nama;
-        // Generate nomor referensi — disimpan ke sheet DAN dikirim via email
-        var refNum = "KBP-" + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyyMMdd-HHmm");
+        var revisiRef = (e.parameter.revisi_ref || "").trim(); // <-- revisi support
+
+        var refNum;
+        var isRevisi = false;
+
+        // Cek apakah ini revisi: revisi_ref ada DAN row dengan ref tsb ada DAN status "Ditolak"
+        if (revisiRef) {
+          var checkRow = findRowByRefForRevisi_(revisiRef);
+          if (checkRow > 0) {
+            isRevisi = true;
+            refNum = revisiRef; // tetap pakai nomor ref lama
+          }
+        }
+        if (!refNum) {
+          // Generate nomor referensi baru
+          refNum = "KBP-" + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyyMMdd-HHmm");
+        }
 
         var result = uploadFileToGoogleDrive(data, filename, nama, email, e, refNum);
 
-        kirimEmailKonfirmasi(e, refNum);
- 
+        // Kirim email konfirmasi (template beda untuk revisi)
+        kirimEmailKonfirmasi(e, refNum, isRevisi);
+
         return ContentService
             .createTextOutput(
-                JSON.stringify({"Anda berhasil mendaftar": "Data telah terkirim"})
+                JSON.stringify({"Anda berhasil mendaftar": isRevisi ? "Data revisi telah terkirim" : "Data telah terkirim", "ref": refNum, "isRevisi": isRevisi})
             )
             .setMimeType(ContentService.MimeType.JSON);
     } catch (error) {
@@ -35,26 +57,73 @@ function doPost(e) {
     }
 }
 
+// Helper: cari row dgn ref number, hanya jika status "Ditolak"
+function findRowByRefForRevisi_(refNumber) {
+  try {
+    var doc = SpreadsheetApp.openById('1p5vDE8-dQbLxQbaxeE9nknDQ0W53QBqibE9qxmOa-0Q');
+    var sheet = doc.getSheetByName('Data');
+    var values = sheet.getDataRange().getValues();
+    var headers = values[0].map(function(h){ return h.toString().toLowerCase().trim(); });
+    var refCol = headers.indexOf('ref_number');
+    var statusCol = headers.indexOf('status');
+    if (refCol < 0 || statusCol < 0) return -1;
+    for (var i = 1; i < values.length; i++) {
+      var ref = values[i][refCol] ? values[i][refCol].toString().trim() : "";
+      var status = values[i][statusCol] ? values[i][statusCol].toString().trim() : "";
+      if (ref === refNumber && status.toLowerCase() === "ditolak") {
+        return i + 1; // row index 1-based
+      }
+    }
+  } catch (err) { Logger.log("findRowByRefForRevisi_ error: " + err); }
+  return -1;
+}
+
 function record_data(e, fileUrl, refNum) {
     try {
         var doc = SpreadsheetApp.openById('1p5vDE8-dQbLxQbaxeE9nknDQ0W53QBqibE9qxmOa-0Q');
         var sheet = doc.getSheetByName('Data');
-        var nextRow = sheet.getLastRow() + 1;
         var timestamp = new Date();
+        var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+
+        // Cek apakah ini revisi
+        var revisiRef = (e.parameter.revisi_ref || "").trim();
+        var targetRow = -1;
+        var isRevisi = false;
+        if (revisiRef) {
+          targetRow = findRowByRefForRevisi_(revisiRef);
+          if (targetRow > 0) isRevisi = true;
+        }
+
         var row = [
             Utilities.formatDate(timestamp, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss")
         ];
 
-        var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-
         for (var i = 1; i < headers.length; i++) {
-            if (headers[i] == "file")           row.push(fileUrl);
-            else if (headers[i] == "status")      row.push("Pending");
-            else if (headers[i] == "ref_number")  row.push(refNum || "");
-            else                                  row.push(e.parameter[headers[i]] || "");
+            var h = headers[i].toString().toLowerCase().trim();
+            if (h == "file")               row.push(fileUrl);
+            else if (h == "status")        row.push("Pending"); // revisi: status balik ke Pending
+            else if (h == "ref_number")    row.push(refNum || "");
+            else if (h == "revisi_count") {
+              // Increment counter kalau revisi
+              if (isRevisi) {
+                var currentVal = sheet.getRange(targetRow, i + 1).getValue();
+                var count = parseInt(currentVal) || 0;
+                row.push(count + 1);
+              } else {
+                row.push(0);
+              }
+            }
+            else                           row.push(e.parameter[headers[i]] || "");
         }
 
-        sheet.getRange(nextRow, 1, 1, row.length).setValues([row]);
+        if (isRevisi && targetRow > 0) {
+          // UPDATE row yang sudah ada
+          sheet.getRange(targetRow, 1, 1, row.length).setValues([row]);
+        } else {
+          // APPEND row baru
+          var nextRow = sheet.getLastRow() + 1;
+          sheet.getRange(nextRow, 1, 1, row.length).setValues([row]);
+        }
     } catch (error) {
         Logger.log(error);
     }
@@ -92,7 +161,7 @@ function formatTanggalIndonesia(date) {
   return `${tanggal} ${bulan} ${tahun}`;
 }
 
-function kirimEmailKonfirmasi(e, refNum) {
+function kirimEmailKonfirmasi(e, refNum, isRevisi) {
     try {
         var emailPemohon = e.parameter.email;
         var nama         = e.parameter.nama            || "-";
@@ -106,7 +175,9 @@ function kirimEmailKonfirmasi(e, refNum) {
         if (!emailPemohon) return;
 
 
-        var subject = "✅ Registrasi Penelitian Diterima – Kesbangpol Kudus [" + refNum + "]";
+        var subject = isRevisi
+          ? "🔄 Revisi Pengajuan Diterima – Kesbangpol Kudus [" + refNum + "]"
+          : "✅ Registrasi Penelitian Diterima – Kesbangpol Kudus [" + refNum + "]";
 
         var htmlBody = `
         <!DOCTYPE html>
@@ -269,11 +340,50 @@ function doGet(e) {
     return handleGenerateSurat(e);
   } else if (action === "checkStatus") {
     return handleCheckStatus(e);
+  } else if (action === "getDataByRef") {
+    return handleGetDataByRef(e);
   }
  
   return ContentService
     .createTextOutput(JSON.stringify({ error: "Action tidak dikenal" }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ===== GET DATA BY REF (untuk revisi auto-fill) =====
+// Return data row by ref_number, HANYA jika status "Ditolak" (security)
+function handleGetDataByRef(e) {
+  try {
+    const ref = (e.parameter.ref || "").trim();
+    if (!ref) return jsonResponse({ found: false, error: "Nomor referensi tidak ada" });
+
+    const doc = SpreadsheetApp.openById('1p5vDE8-dQbLxQbaxeE9nknDQ0W53QBqibE9qxmOa-0Q');
+    const sheet = doc.getSheetByName('Data');
+    const values = sheet.getDataRange().getValues();
+    const headers = values[0].map(function(h){ return h.toString().toLowerCase().trim(); });
+    const refCol = headers.indexOf('ref_number');
+    const statusCol = headers.indexOf('status');
+    if (refCol < 0 || statusCol < 0) return jsonResponse({ found: false, error: "Kolom tidak ditemukan" });
+
+    for (var i = 1; i < values.length; i++) {
+      var rowRef = values[i][refCol] ? values[i][refCol].toString().trim() : "";
+      var rowStatus = values[i][statusCol] ? values[i][statusCol].toString().trim() : "";
+      if (rowRef === ref) {
+        // Hanya boleh revisi kalau status "Ditolak"
+        if (rowStatus.toLowerCase() !== "ditolak") {
+          return jsonResponse({ found: false, error: "Pengajuan ini tidak dapat direvisi (status: " + rowStatus + ")" });
+        }
+        // Build data object
+        var row = {};
+        headers.forEach(function(h, idx) {
+          row[h] = values[i][idx] ? values[i][idx].toString() : "";
+        });
+        return jsonResponse({ found: true, data: row });
+      }
+    }
+    return jsonResponse({ found: false, error: "Nomor referensi tidak ditemukan" });
+  } catch (err) {
+    return jsonResponse({ found: false, error: err.toString() });
+  }
 }
  
 function handleLogin(e) {
@@ -486,6 +596,8 @@ function handleSendEmail(e) {
       subject    = "❌ Pengajuan Penelitian Tidak Dapat Diproses – Kesbangpol Kudus";
       bannerBg   = "#dc2626";
       bannerText = "❌ &nbsp;Pengajuan Penelitian Tidak Dapat Diproses";
+      var refNumber = row.ref_number || "";
+      var revisiUrl = FRONTEND_BASE_URL + "/form?revisi=" + encodeURIComponent(refNumber);
       bodyContent = `
         <p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:15px;color:#1a2b3c;">
           Kepada Yth. <strong>${nama}</strong>,
@@ -501,11 +613,29 @@ function handleSendEmail(e) {
             <p style="margin:0;font-family:Arial,sans-serif;font-size:13.5px;color:#1a2b3c;line-height:1.7;">${bodyTambahan}</p>
           </td></tr>
         </table>` : ""}
+
+        <!-- TOMBOL REVISI -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;margin-bottom:24px;">
+          <tr><td style="padding:20px 22px;text-align:center;">
+            <p style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:12px;font-weight:700;color:#0c4a6e;text-transform:uppercase;letter-spacing:1.2px;">📝 Ajukan Revisi</p>
+            <p style="margin:0 0 14px;font-family:Arial,sans-serif;font-size:13px;color:#0c4a6e;line-height:1.7;">
+              Bapak/Ibu dapat memperbaiki data yang kurang dan mengirim ulang pengajuan melalui tombol di bawah ini. Data Anda akan otomatis terisi.
+            </p>
+            <a href="${revisiUrl}" style="display:inline-block;background:linear-gradient(135deg,#2558a3,#1a3a5c);color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-family:Arial,sans-serif;font-size:14px;font-weight:700;box-shadow:0 4px 12px rgba(37,88,163,0.3);">
+              🔄 Revisi Pengajuan
+            </a>
+            <p style="margin:12px 0 0;font-family:Arial,sans-serif;font-size:11px;color:#6b7a8d;">
+              Atau salin link berikut:<br>
+              <span style="color:#2558a3;word-break:break-all;">${revisiUrl}</span>
+            </p>
+          </td></tr>
+        </table>
+
         <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff5f5;border:1px solid #fecaca;border-radius:10px;margin-bottom:24px;">
           <tr><td style="padding:16px 18px;">
             <p style="margin:0;font-family:Arial,sans-serif;font-size:13px;color:#7f1d1d;line-height:1.7;">
-              <strong>ⓘ<br>
-              Apabila Bapak/Ibu ingin mengajukan kembali atau memerlukan klarifikasi lebih lanjut, silakan menghubungi petugas Kesbangpol secara langsung atau melalui saluran komunikasi resmi yang tersedia.
+              <strong>ⓘ</strong>&nbsp;
+              Apabila Bapak/Ibu memerlukan klarifikasi lebih lanjut, silakan menghubungi petugas Kesbangpol secara langsung atau melalui saluran komunikasi resmi yang tersedia.
             </p>
           </td></tr>
         </table>

@@ -534,6 +534,19 @@ tbody td {
 .badge-proses  { background: #e6f1fb; color: var(--primary-light); border: 1px solid #b5d4f4; }
 .badge-selesai { background: #e8f8f0; color: var(--success); border: 1px solid #9fd4b8; }
 .badge-ditolak { background: #fdf0f0; color: var(--danger); border: 1px solid #f5c6cb; }
+.badge-revisi {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fdba74;
+  cursor: help;
+}
 
 /* ===== DROPDOWN ACTION MENU ===== */
 .dropdown-action {
@@ -1368,4 +1381,27 @@ body.dark .ringkasan-item  { filter: brightness(0.85); }
   .sidebar.mobile-open .nav-item { justify-content: flex-start !important; padding: 10px 16px !important; }
   .sidebar.mobile-open .nav-badge { position: static !important; margin-left: auto !important; }
   .main { margin-left: 0 !important; }
+}
+
+/* ===== LIVE INDICATOR (auto-refresh aktif) ===== */
+.live-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  position: relative;
+  box-shadow: 0 0 6px rgba(34,197,94,0.6);
+}
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid #22c55e;
+  opacity: 0;
+  animation: livePulse 2s ease-out infinite;
+}
+@keyframes livePulse {
+  0%   { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
 }
